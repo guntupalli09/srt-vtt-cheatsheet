@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://guntupalli09.github.io/srt-vtt-cheatsheet/sitemap.xml

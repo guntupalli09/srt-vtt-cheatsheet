@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SRT vs VTT Cheat Sheet and Subtitle Reading Speed Calculator</title>
+<meta name="description" content="SRT and WebVTT formats side by side, common file mistakes, a characters-per-second and words-per-minute calculator, a local cue checker and a transcript style checklist. Runs in your browser.">
+<link rel="canonical" href="https://guntupalli09.github.io/srt-vtt-cheatsheet/">
+<meta name="color-scheme" content="light dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "SRT vs VTT Cheat Sheet and Reading Speed Calculator",
+  "url": "https://guntupalli09.github.io/srt-vtt-cheatsheet/",
+  "description": "Reference for the SRT and WebVTT subtitle formats, a characters-per-second and words-per-minute calculator, and a cue checker that runs locally in the browser.",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any (web browser)",
+  "browserRequirements": "Requires JavaScript",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "creator": { "@type": "Organization", "name": "VideoText", "url": "https://videotext.io" }
+}
+</script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap">
+    <h1>SRT vs VTT cheat sheet and reading speed calculator</h1>
+    <p class="lede">How the two most common subtitle formats differ, the mistakes that break files, and a calculator for characters per second and words per minute. Everything on this page runs in your browser.</p>
+    <nav aria-label="On this page">
+      <ul class="toc">
+        <li><a href="#formats">SRT vs VTT</a></li>
+        <li><a href="#mistakes">Common mistakes</a></li>
+        <li><a href="#which">Which to use</a></li>
+        <li><a href="#calculator">Reading speed calculator</a></li>
+        <li><a href="#checker">Check a file</a></li>
+        <li><a href="#transcripts">Transcript style checklist</a></li>
+        <li><a href="#sources">Sources</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<section id="formats" aria-labelledby="formats-h">
+  <h2 id="formats-h">SRT vs VTT at a glance</h2>
+  <p>SRT (SubRip) has no formal standard; it is defined by long-standing convention. WebVTT is specified by the W3C in <a href="https://www.w3.org/TR/webvtt1/">WebVTT: The Web Video Text Tracks Format</a>. The WebVTT rows below follow that document.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-labelledby="formats-cap">
+  <table>
+    <caption id="formats-cap">Structural differences between SRT and WebVTT</caption>
+    <thead><tr><th scope="col">Feature</th><th scope="col">SRT</th><th scope="col">WebVTT (.vtt)</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">File header</th><td>None. The file starts with the first cue number.</td><td>Required. The first line is <code>WEBVTT</code>, optionally followed by a space or tab and other text, then a blank line. An optional byte order mark may come before it.</td></tr>
+      <tr><th scope="row">Cue numbering</th><td>A number above every cue, by convention 1, 2, 3 and so on.</td><td>Optional cue identifier on the line above the timing. Any text without <code>--&gt;</code>; must be unique in the file.</td></tr>
+      <tr><th scope="row">Timestamp</th><td><code>00:01:02,500</code>: hours, minutes, seconds, then a <strong>comma</strong> and three digits of milliseconds.</td><td><code>00:01:02.500</code>: a <strong>period</strong> and exactly three digits. Hours are optional when zero (<code>01:02.500</code>).</td></tr>
+      <tr><th scope="row">Timing line</th><td><code>start --&gt; end</code></td><td><code>start --&gt; end</code>, with one or more spaces or tabs around the arrow. The end must be after the start.</td></tr>
+      <tr><th scope="row">Cue settings</th><td>Not part of the convention. Some players read position codes, many ignore them.</td><td>Optional after the end time: <code>vertical</code>, <code>line</code>, <code>position</code>, <code>size</code>, <code>align</code>, <code>region</code>.</td></tr>
+      <tr><th scope="row">Comments</th><td>None.</td><td><code>NOTE</code> blocks, ignored by players.</td></tr>
+      <tr><th scope="row">Styling</th><td>Informal tags many players accept, such as <code>&lt;i&gt;</code>, <code>&lt;b&gt;</code>, <code>&lt;u&gt;</code> and <code>&lt;font color&gt;</code>. Support varies.</td><td>Defined tags: <code>&lt;c&gt;</code>, <code>&lt;i&gt;</code>, <code>&lt;b&gt;</code>, <code>&lt;u&gt;</code>, <code>&lt;ruby&gt;</code>/<code>&lt;rt&gt;</code>, <code>&lt;v Speaker&gt;</code>, <code>&lt;lang&gt;</code>, plus inline timestamps. <code>STYLE</code> blocks (CSS) must come before the first cue.</td></tr>
+      <tr><th scope="row">Encoding</th><td>Not fixed by any standard. UTF-8 is the safe choice; older files may use other encodings.</td><td>Must be UTF-8.</td></tr>
+      <tr><th scope="row">Cue order and overlap</th><td>Listed in time order by convention.</td><td>Cues must be listed by start time. Overlapping cues are allowed.</td></tr>
+      <tr><th scope="row">Separator between cues</th><td>A blank line.</td><td>A blank line.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>The same two cues in each format</h3>
+  <div class="side-by-side">
+    <figure>
+      <figcaption>example.srt</figcaption>
+<pre><code>1
+00:00:01,000 --&gt; 00:00:03,200
+Welcome back to the workshop.
+
+2
+00:00:03,600 --&gt; 00:00:06,400
+&lt;i&gt;Today we look at timing.&lt;/i&gt;
+</code></pre>
+    </figure>
+    <figure>
+      <figcaption>example.vtt</figcaption>
+<pre><code>WEBVTT
+
+NOTE Converted from example.srt
+
+intro
+00:00:01.000 --&gt; 00:00:03.200
+Welcome back to the workshop.
+
+00:00:03.600 --&gt; 00:00:06.400 line:85%
+&lt;v Host&gt;&lt;i&gt;Today we look at timing.&lt;/i&gt;
+</code></pre>
+    </figure>
+  </div>
+  <p>Converting SRT to VTT by hand: add the <code>WEBVTT</code> line and a blank line at the top, change every comma in the timestamps to a period, and keep or drop the cue numbers (in VTT they become optional identifiers).</p>
+</section>
+
+<section id="mistakes" aria-labelledby="mistakes-h">
+  <h2 id="mistakes-h">Common mistakes that break files</h2>
+  <dl class="mistakes">
+    <dt>Wrong timestamp separator</dt>
+    <dd>A comma in a VTT timestamp is invalid, and players that follow the W3C parsing rules drop that cue. A period in an SRT timestamp is accepted by some players and rejected by others. Use a comma in SRT and a period in VTT.</dd>
+    <dt>Missing blank line between cues</dt>
+    <dd>Without the blank line, the next cue number and timing are read as text of the cue above, so one cue shows the wrong text and the next one disappears.</dd>
+    <dt>Overlapping cues</dt>
+    <dd>WebVTT allows overlaps, and players then show both cues together. In SRT, players differ. Accidental overlaps usually come from shifting timings or merging files; make sure each cue ends before the next one starts unless two lines really should appear at once.</dd>
+    <dt>End time not after start time</dt>
+    <dd>A zero-length or negative cue never shows. It usually comes from a typo or a bad time shift.</dd>
+    <dt>BOM and encoding</dt>
+    <dd>Text saved in a legacy encoding and opened as UTF-8 shows garbled accented letters (for example <code>Ã©</code> instead of <code>é</code>). WebVTT must be UTF-8 and may start with a byte order mark. In SRT a byte order mark can show up as stray characters before the first number in some tools, so UTF-8 without BOM is safest.</dd>
+    <dt>Empty cues</dt>
+    <dd>A cue with timing but no text puts nothing on screen and can confuse editors and converters. Delete it or add the missing line.</dd>
+    <dt>A bad header in VTT</dt>
+    <dd>The first line must be <code>WEBVTT</code>. Text such as <code>WEBVTT FILE</code> works only because a space follows the word; <code>WEBVTTFILE</code> or a blank first line makes the whole file invalid.</dd>
+    <dt>Lines that are too long or too fast</dt>
+    <dd>Technically valid, but hard to read. Use the calculator and checker below.</dd>
+  </dl>
+</section>
+
+<section id="which" aria-labelledby="which-h">
+  <h2 id="which-h">When to use which</h2>
+  <ul>
+    <li><strong>Use WebVTT</strong> for subtitles and captions on web pages: browsers support it natively through the HTML <code>&lt;track&gt;</code> element, and it supports positioning, speaker voices and styling.</li>
+    <li><strong>Use SRT</strong> when a platform, editor or client asks for it. It is simple and widely accepted by video editors, desktop players and upload forms.</li>
+    <li><strong>Check the brief first.</strong> Festivals, broadcasters and streaming services often require their own delivery formats. The BBC, for example, asks for EBU-TT and EBU-TT-D rather than SRT or VTT.</li>
+  </ul>
+</section>
+
+<section id="calculator" aria-labelledby="calc-h">
+  <h2 id="calc-h">Reading speed calculator</h2>
+  <p>Reading speed is measured as characters per second (cps) or words per minute (wpm). Published guidelines use different measures and figures:</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-labelledby="guides-cap">
+  <table>
+    <caption id="guides-cap">Published reading speed figures</caption>
+    <thead><tr><th scope="col">Source</th><th scope="col">What it states</th></tr></thead>
+    <tbody>
+      <tr><th scope="row"><a href="https://partnerhelp.netflixstudios.com/hc/en-us/articles/217350977-English-USA-Timed-Text-Style-Guide">Netflix, English (USA) Timed Text Style Guide</a></th><td>Adult programs: up to 20 characters per second. Children's programs: up to 17 characters per second. 42 characters per line.</td></tr>
+      <tr><th scope="row"><a href="https://www.bbc.co.uk/accessibility/forproducts/guides/subtitles/">BBC Subtitle Guidelines</a></th><td>Recommended subtitle speed 160-180 words per minute (0.33 to 0.375 seconds per word). The BBC adds that viewers tend to prefer verbatim subtitles, so the rate may be adjusted to the pace of the programme.</td></tr>
+      <tr><th scope="row"><a href="https://dcmp.org/learn/captioningkey/601">DCMP Captioning Key, Presentation Rate</a></th><td>For educational media: lower level not to exceed 130 wpm, middle level 140 wpm, upper level 160 wpm. Speaker IDs and sound effects count as words.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>How this page counts: characters include letters, spaces and punctuation, with tags removed and line breaks not counted. Words are runs of text separated by spaces. Other tools may count slightly differently.</p>
+
+  <form id="calc-form" class="card" novalidate>
+    <fieldset>
+      <legend>What do you have?</legend>
+      <label class="inline"><input type="radio" name="calc-mode" value="text" checked> Subtitle text</label>
+      <label class="inline"><input type="radio" name="calc-mode" value="count"> Character and word counts</label>
+    </fieldset>
+    <div id="text-fields">
+      <label for="calc-text">Subtitle text (one cue)</label>
+      <textarea id="calc-text" rows="3">I always knew
+that you would eventually agree with me.</textarea>
+      <label for="calc-seconds">Cue duration in seconds</label>
+      <input id="calc-seconds" type="number" min="0.01" step="0.01" value="2.5" inputmode="decimal">
+    </div>
+    <div id="count-fields" hidden>
+      <label for="calc-chars">Characters</label>
+      <input id="calc-chars" type="number" min="0" step="1" value="42" inputmode="numeric">
+      <label for="calc-words">Words <span class="hint">(optional, for words per minute)</span></label>
+      <input id="calc-words" type="number" min="0" step="1" inputmode="numeric">
+      <label for="calc-seconds2">Duration in seconds</label>
+      <input id="calc-seconds2" type="number" min="0.01" step="0.01" value="2" inputmode="decimal">
+    </div>
+    <button type="submit">Calculate</button>
+    <div id="calc-result" class="result" role="status" aria-live="polite"></div>
+  </form>
+</section>
+
+<section id="checker" aria-labelledby="check-h">
+  <h2 id="check-h">Check an SRT or VTT file for cues over the limit</h2>
+  <p class="privacy"><strong>Private by design:</strong> the file is read and checked by JavaScript in this page. Nothing is uploaded or sent anywhere, and this page makes no network requests.</p>
+  <form id="check-form" class="card" novalidate>
+    <label for="check-file">Open a file from your device <span class="hint">(.srt, .vtt or .txt)</span></label>
+    <input id="check-file" type="file" accept=".srt,.vtt,.txt,text/vtt,text/plain">
+    <label for="check-input">Or paste the file contents</label>
+    <textarea id="check-input" rows="10" spellcheck="false"></textarea>
+    <div class="row">
+      <div>
+        <label for="check-cps">Max characters per second</label>
+        <input id="check-cps" type="number" min="1" step="0.5" value="20" inputmode="decimal">
+      </div>
+      <div>
+        <label for="check-line">Max characters per line</label>
+        <input id="check-line" type="number" min="10" step="1" value="42" inputmode="numeric">
+      </div>
+    </div>
+    <p class="hint">Defaults are the Netflix English (USA) adult figures: 20 cps and 42 characters per line. Use 17 for its children's limit, or your client's numbers.</p>
+    <div class="buttons">
+      <button type="submit">Check cues</button>
+      <button type="button" id="check-sample" class="secondary">Load a broken sample</button>
+    </div>
+    <div id="check-result" class="result" role="status" aria-live="polite" tabindex="-1"></div>
+  </form>
+  <p>The checker reports: unreadable or wrongly separated timestamps, missing blank lines, end times not after start times, overlaps and out-of-order cues, empty cues, missing or non-sequential SRT numbers, duplicate VTT identifiers, a bad <code>WEBVTT</code> header, byte order marks, signs of a wrong encoding, and cues over your speed and line-length limits.</p>
+</section>
+
+<section id="transcripts" aria-labelledby="tr-h">
+  <h2 id="tr-h">Client transcript style checklist</h2>
+  <p>Transcripts delivered to a client are usually judged against that client's style guide, and guides disagree on the details. Settle each of these before you start, and write the answer down.</p>
+  <ol class="checklist">
+    <li><h3>Verbatim level</h3>
+      <p><strong>Full verbatim</strong> keeps everything said: fillers (um, uh), false starts, repetitions and stutters. <strong>Clean verbatim</strong> removes those without changing meaning or the speaker's wording. Ask which one the client wants, and whether some items are always kept (for example, laughter or meaningful hesitation).</p></li>
+    <li><h3>Speaker labels</h3>
+      <p>Pick one format and use it for every turn: full name, first name, role (INTERVIEWER, RESPONDENT) or Speaker 1 / Speaker 2. Check capitalisation, bold, and the colon after the label. Never use two labels for the same person.</p></li>
+    <li><h3>Tags and notation</h3>
+      <p>Use the client's exact wording and brackets for unclear audio, crosstalk, background sounds and foreign-language speech, for example <code>[inaudible 00:12:31]</code> or <code>[crosstalk]</code>. Do not invent new tags. Ask whether an unclear word should be guessed with a marker or tagged.</p></li>
+    <li><h3>Timestamps</h3>
+      <p>Confirm the format (<code>[HH:MM:SS]</code> or <code>[MM:SS]</code>), where it goes (every speaker change, every paragraph, or at a fixed interval), and whether tags like inaudible carry their own time.</p></li>
+    <li><h3>Numbers</h3>
+      <p>Number rules vary even between published guides. The <a href="https://partnerhelp.netflixstudios.com/hc/en-us/articles/217350977-English-USA-Timed-Text-Style-Guide">Netflix English (USA) guide</a> writes out zero to ten and uses numerals above ten; the <a href="https://www.bbc.co.uk/accessibility/forproducts/guides/subtitles/">BBC guidelines</a> say one to ten are often better spelled out but use numerals with units. Both spell out a number that starts a sentence. Ask how the client handles money, percentages, dates and times.</p></li>
+    <li><h3>Spelling and punctuation</h3>
+      <p>US or UK spelling, how to mark interruptions and trailing speech, and whether profanity is kept or masked.</p></li>
+    <li><h3>Final pass</h3>
+      <p>Search the finished file for each tag and label to catch inconsistent spellings, and check the export format the client asked for (DOCX, TXT, PDF, SRT or VTT).</p></li>
+  </ol>
+</section>
+
+<section id="fix" aria-labelledby="fix-h" class="note">
+  <h2 id="fix-h">Need to fix a file?</h2>
+  <p><a href="https://videotext.io/fix-subtitles">VideoText Fix Subtitles</a> repairs overlaps, timing, reading speed and long lines in an SRT or VTT file. Free SRT and VTT downloads include two short VideoText watermark cues, one at the start and one after the last cue.</p>
+  <p>For transcripts, <a href="https://videotext.io/guideline-format">VideoText's style guide formatter</a> applies a client's rules (verbatim level, speaker labels, tags, timestamps) and flags uncertain edits for you to accept or reject; its built-in presets are VideoText's own editable rule cards, not official guides.</p>
+</section>
+
+<section id="sources" aria-labelledby="sources-h">
+  <h2 id="sources-h">Sources</h2>
+  <ul class="sources">
+    <li>W3C, <a href="https://www.w3.org/TR/webvtt1/">WebVTT: The Web Video Text Tracks Format</a> (Candidate Recommendation Draft, 20 May 2026): file structure, timestamps, cue settings, comment and style blocks, cue overlap and UTF-8.</li>
+    <li>Netflix Partner Help Center, <a href="https://partnerhelp.netflixstudios.com/hc/en-us/articles/217350977-English-USA-Timed-Text-Style-Guide">English (USA) Timed Text Style Guide</a>: 42 characters per line; up to 20 cps (adult), up to 17 cps (children); number style.</li>
+    <li>BBC, <a href="https://www.bbc.co.uk/accessibility/forproducts/guides/subtitles/">Subtitle Guidelines</a>: 160-180 words per minute; number style; delivery formats.</li>
+    <li>DCMP, <a href="https://dcmp.org/learn/captioningkey/601">Captioning Key: Presentation Rate</a>: 130 / 140 / 160 wpm maximums for lower, middle and upper-level educational media.</li>
+  </ul>
+  <p class="hint">Figures were checked against these pages in October 2026. Guidelines change; check the source before relying on a number.</p>
+</section>
+
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <p>Made by <a href="https://videotext.io">VideoText</a>. Code under the MIT License.</p>
+  </div>
+</footer>
+</body>
+</html>
